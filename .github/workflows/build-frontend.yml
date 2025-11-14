@@ -20,10 +20,14 @@ jobs:
         with:
           node-version: 16
 
+      - name: Install dependencies
+        run: |
+          cd gsa
+          npm install  # 👈 使用 npm install 而不是 npm ci
+
       - name: Build frontend
         run: |
           cd gsa
-          npm ci
           npm run build
 
       - name: Pack web
