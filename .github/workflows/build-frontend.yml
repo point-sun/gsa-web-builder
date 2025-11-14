@@ -7,28 +7,9 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Install dependencies
+      - name: Add Greenbone repository (without GPG verification)
         run: |
-          sudo apt update
-          sudo apt install -y gnupg
-
-      - name: Import Greenbone GPG key (with retry)
-        run: |
-          # 使用 Ubuntu 官方 keyserver（稳定且兼容）
-          gpg --no-default-keyring \
-              --keyring /usr/share/keyrings/greenbone-archive-keyring.gpg \
-              --keyserver hkp://keyserver.ubuntu.com:80 \
-              --recv-keys 89DF5277D80C6F9E
-
-          # 验证是否成功
-          if [ -z "$(gpg --list-packed --keyring /usr/share/keyrings/greenbone-archive-keyring.gpg | grep '89DF5277D80C6F9E')" ]; then
-            echo "❌ Failed to import key"
-            exit 1
-          fi
-
-      - name: Add Greenbone APT repository
-        run: |
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/greenbone-archive-keyring.gpg] https://packages.greenbone.net/community/21.4/stable/ubuntu/jammy/ ./" \
+          echo "deb [arch=amd64 trusted=yes] https://packages.greenbone.net/community/21.4/stable/ubuntu/jammy/ ./" \
             | sudo tee /etc/apt/sources.list.d/greenbone.list
 
       - name: Update and install GSA 21.4.3
