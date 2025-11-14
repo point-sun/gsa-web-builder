@@ -1,4 +1,4 @@
-name: Build GSA Web Frontend
+name: Build GSA Frontend from Source
 
 on:
   workflow_dispatch:
@@ -7,24 +7,31 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Add Greenbone repository (without GPG verification)
-        run: |
-          echo "deb [arch=amd64 trusted=yes] https://packages.greenbone.net/community/21.4/stable/ubuntu/jammy/ ./" \
-            | sudo tee /etc/apt/sources.list.d/greenbone.list
+      - uses: actions/checkout@v4
 
-      - name: Update and install GSA 21.4.3
+      - name: Clone GSA source
         run: |
-          sudo apt update
-          sudo apt install -y greenbone-security-assistant=21.4.3-21~ubuntu22.04
+          git clone https://github.com/greenbone/gsa.git
+          cd gsa
+          git checkout v21.4.3
 
-      - name: Pack web frontend
+      - name: Setup Node.js 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Build frontend
         run: |
-          tar -czf gsa-web-21.4.3.tar.gz -C /usr/share/gsa web
-          ls -lh gsa-web-21.4.3.tar.gz
+          cd gsa
+          npm ci
+          npm run build
+
+      - name: Pack web
+        run: |
+          tar -czf gsa-web-21.4.3.tar.gz -C gsa/build web
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: gsa-web-21.4.3
           path: gsa-web-21.4.3.tar.gz
-          retention-days: 7
