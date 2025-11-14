@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd gsa
-          npm install  # 👈 使用 npm install 而不是 npm ci
+          npm install
 
       - name: Build frontend
         run: |
