@@ -7,28 +7,34 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Add Greenbone GPG key
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y wget gnupg
-          wget -O - https://www.greenbone.net/GB-GPG-KEY-greenbone-net.asc | sudo gpg --dearmor -o /usr/share/keyrings/greenbone-archive-keyring.gpg
+          sudo apt install -y gnupg
+
+      - name: Import Greenbone GPG key from keyserver
+        run: |
+          gpg --no-default-keyring \
+              --keyring /usr/share/keyrings/greenbone-archive-keyring.gpg \
+              --keyserver hkps://keys.openpgp.org \
+              --recv-keys 89DF5277D80C6F9E
 
       - name: Add Greenbone APT repository
         run: |
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/greenbone-archive-keyring.gpg] https://packages.greenbone.net/community/21.4/stable/ubuntu/jammy/ ./" \
             | sudo tee /etc/apt/sources.list.d/greenbone.list
 
-      - name: Install greenbone-security-assistant (21.4.3)
+      - name: Update package list and install GSA 21.4.3
         run: |
           sudo apt update
           sudo apt install -y greenbone-security-assistant=21.4.3-21~ubuntu22.04
 
-      - name: Pack web frontend
+      - name: Pack GSA web frontend
         run: |
           tar -czf gsa-web-21.4.3.tar.gz -C /usr/share/gsa web
-          ls -lh gsa-web-21.4.3.tar.gz
+          echo "Frontend packed: $(ls -lh gsa-web-21.4.3.tar.gz)"
 
-      - name: Upload as artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: gsa-web-21.4.3
